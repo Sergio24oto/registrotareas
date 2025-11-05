@@ -1,58 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
-    
-    <style>
-        body { 
-            font-family: sans-serif; 
-            margin: 2em; 
-        }
-        /* Esta es una "clase" que le pondremos a las tareas completadas */
-        .tarea-completada {
-            text-decoration: line-through; /* ¡El tachado! */
-            color: #888; /* Un color gris */
-        }
-        li {
-            margin-bottom: 0.5em; 
-        }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Lista de tareas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <H1>Mi CRUD de tareas utilizando GIT</H1>
-    <ul>
-    {% for tarea in tareas %}
+    <header class="site-header">
+        <div class="container">
+            <h1>Mi lista de tareas</h1>
+            <p class="subtitle">Agregar, completar y borrar tareas rápidamente</p>
+        </div>
+    </header>
 
-        <li {% if tarea['completada'] %} class="tarea-completada" {% endif %}>
-
-            {{ tarea['descripcion'] }} 
-
-            <form action="{{ url_for('borrar_tarea', tarea_id=tarea['id']) }}" method="POST" style="display: inline;">
-                <button type="submit">Borrar</button>
+    <main class="container">
+        <section class="card add-card">
+            <form action="{{ url_for('agregar') }}" method="post" class="form-inline">
+                <input name="descripcion" type="text" placeholder="Escribe una tarea nueva..." required>
+                <button type="submit" class="btn primary">Agregar</button>
             </form>
+        </section>
 
-            {% if not tarea['completada'] %}
-                <form action="{{ url_for('completar_tarea', tarea_id=tarea['id']) }}" method="POST" style="display: inline;">
-                    <button type="submit">Completar</button>
-                </form>
+        <section class="card list-card">
+            {% if tareas %}
+            <ul class="tareas">
+                {% for t in tareas %}
+                <li class="tarea {% if t['completada'] %}completada{% endif %}">
+                    <div class="descripcion">
+                        <span class="badge">{% if t['completada'] %}✓{% else %}•{% endif %}</span>
+                        <span class="texto">{{ t['descripcion'] }}</span>
+                    </div>
+
+                    <div class="acciones">
+                        {% if not t['completada'] %}
+                        <form action="{{ url_for('completar_tarea', tarea_id=t['id']) }}" method="post" class="inline">
+                            <button class="btn small" type="submit">Completar</button>
+                        </form>
+                        {% endif %}
+                        <form action="{{ url_for('borrar_tarea', tarea_id=t['id']) }}" method="post" class="inline" onsubmit="return confirm('Borrar tarea?');">
+                            <button class="btn danger small" type="submit">Borrar</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty">No hay tareas. Agrega la primera!</p>
             {% endif %}
+        </section>
+    </main>
 
-        </li>
-    {% else %}
-        <li>¡No hay tareas pendientes! Agregá una.</li>
-    {% endfor %}
-</ul>
-    <hr> <h2>Agregar Nueva Tarea</h2>
-
-    <form action="/agregar" method="POST">
-        
-        <label for="descripcion-tarea">Nueva Tarea:</label>
-        
-        <input type="text" id="descripcion-tarea" name="descripcion" required>
-        
-        <button type="submit">Agregar</button>
-    </form>
+    <footer class="site-footer">
+        <div class="container">
+            <small>&copy; {{  config.get('APP_NAME', 'Mi Lista') }}</small>
+        </div>
+    </footer>
 </body>
 </html>
